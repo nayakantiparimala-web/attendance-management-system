@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Management System</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+        }
+
+        header {
+            background: #222;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 30px auto;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #ccc;
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px;
+            width: 30%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background: #222;
+            color: white;
+            cursor: pointer;
+        }
+
+        .present {
+            background: green;
+        }
+
+        .absent {
+            background: red;
+        }
+
+        .delete {
+            background: #777;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background: #222;
+            color: white;
+        }
+
+        .summary {
+            display: flex;
+            gap: 15px;
+        }
+
+        .summary div {
+            flex: 1;
+            background: #eee;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px;
+        }
+
+        .number {
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 700px) {
+            input,
+            button {
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            .summary {
+                flex-direction: column;
+            }
+
+            table {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Attendance Management System</h1>
+    <p>Full Stack Development Project</p>
+</header>
+
+<div class="container">
+
+    <div class="card">
+        <h2>Add Student</h2>
+
+        <input
+            type="text"
+            id="name"
+            placeholder="Student Name"
+        >
+
+        <input
+            type="text"
+            id="roll"
+            placeholder="Roll Number"
+        >
+
+        <input
+            type="text"
+            id="course"
+            placeholder="Course"
+        >
+
+        <button onclick="addStudent()">
+            Add Student
+        </button>
+    </div>
+
+    <div class="card">
+        <h2>Attendance Summary</h2>
+
+        <div class="summary">
+
+            <div>
+                <div>Total Students</div>
+                <div class="number" id="total">0</div>
+            </div>
+
+            <div>
+                <div>Present</div>
+                <div class="number" id="present">0</div>
+            </div>
+
+            <div>
+                <div>Absent</div>
+                <div class="number" id="absent">0</div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card">
+
+        <h2>Student Attendance</h2>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Name</th>
+                    <th>Roll No</th>
+                    <th>Course</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="studentTable"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+    let students =
+        JSON.parse(localStorage.getItem("attendanceStudents")) || [];
+
+    displayStudents();
+
+    function addStudent() {
+
+        let name =
+            document.getElementById("name").value.trim();
+
+        let roll =
+            document.getElementById("roll").value.trim();
+
+        let course =
+            document.getElementById("course").value.trim();
+
+        if (name === "" || roll === "" || course === "") {
+            alert("Please fill all fields");
+            return;
+        }
+
+        let student = {
+            name: name,
+            roll: roll,
+            course: course,
+            status: "Absent"
+        };
+
+        students.push(student);
+
+        saveData();
+
+        document.getElementById("name").value = "";
+        document.getElementById("roll").value = "";
+        document.getElementById("course").value = "";
+
+        displayStudents();
+    }
+
+    function markPresent(index) {
+
+        students[index].status = "Present";
+
+        saveData();
+        displayStudents();
+    }
+
+    function markAbsent(index) {
+
+        students[index].status = "Absent";
+
+        saveData();
+        displayStudents();
+    }
+
+    function deleteStudent(index) {
+
+        students.splice(index, 1);
+
+        saveData();
+        displayStudents();
+    }
+
+    function displayStudents() {
+
+        let table =
+            document.getElementById("studentTable");
+
+        table.innerHTML = "";
+
+        let presentCount = 0;
+        let absentCount = 0;
+
+        students.forEach(function(student, index) {
+
+            if (student.status === "Present") {
+                presentCount++;
+            } else {
+                absentCount++;
+            }
+
+            let row =
+                document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${student.name}</td>
+                <td>${student.roll}</td>
+                <td>${student.course}</td>
+                <td>${student.status}</td>
+
+                <td>
+                    <button
+                        class="present"
+                        onclick="markPresent(${index})">
+                        Present
+                    </button>
+
+                    <button
+                        class="absent"
+                        onclick="markAbsent(${index})">
+                        Absent
+                    </button>
+
+                    <button
+                        class="delete"
+                        onclick="deleteStudent(${index})">
+                        Delete
+                    </button>
+                </td>
+            `;
+
+            table.appendChild(row);
+        });
+
+        document.getElementById("total").innerText =
+            students.length;
+
+        document.getElementById("present").innerText =
+            presentCount;
+
+        document.getElementById("absent").innerText =
+            absentCount;
+    }
+
+    function saveData() {
+
+        localStorage.setItem(
+            "attendanceStudents",
+            JSON.stringify(students)
+        );
+    }
+
+</script>
+
+</body>
+</html>
